@@ -139,7 +139,7 @@ export function LanguageDistributionChart({ stats }: ChartsProps) {
 export function AreaVsPopulationChart({ stats }: ChartsProps) {
   if (!stats) return null;
 
-  const data = stats.topCountriesByPopulation.slice(0, 20).map((country) => ({
+  const data = stats.topCountriesByArea.slice(0, 20).map((country) => ({
     name: country.name.common,
     area: country.area || 0,
     population: country.population || 0,

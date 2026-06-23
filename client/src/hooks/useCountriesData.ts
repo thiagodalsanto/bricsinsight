@@ -1,16 +1,12 @@
 /**
- * GeoInsight — Hook para fetch e processamento de dados de países
+ * GeoInsight — Hooks para dados de países
  * Dark Tech Sophisticated — Cyberpunk Minimalism
  * 
- * Implementa:
- * - Cache com React Query
- * - Cálculos derivados (densidade, idiomas, moedas)
- * - Agregações por região
- * - Distribuição de dados
+ * Gerencia dados da REST Countries API com cache via TanStack Query
+ * Calcula dados derivados: densidade, idiomas únicos, etc.
  */
 
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import {
   CountryData,
   DerivedCountryData,
@@ -18,34 +14,46 @@ import {
   RegionStats,
 } from '@/types/countries';
 
-const API_BASE_URL = 'https://api.restcountries.com/v3.1';
+const API_BASE_URL = 'https://api.restcountries.com/countries';
+const API_KEY = 'rc_live_6a8abcad9efa434ba77c77f3d388ee6c';
 
 /**
  * Calcula dados derivados para um país
  */
 function enrichCountryData(country: CountryData): DerivedCountryData {
-  const populationDensity = country.area && country.population
-    ? Math.round((country.population / country.area) * 100) / 100
-    : 0;
-
-  const languageCount = country.languages ? Object.keys(country.languages).length : 0;
-  const currencyCount = country.currencies ? Object.keys(country.currencies).length : 0;
+  const area = country.area || 0;
+  const population = country.population || 0;
+  const density = area > 0 ? population / area : 0;
 
   return {
     ...country,
-    populationDensity,
-    languageCount,
-    currencyCount,
+    populationDensity: density,
+    languageCount: Object.keys(country.languages || {}).length,
+    currencyCount: Object.keys(country.currencies || {}).length,
   };
 }
 
 /**
- * Fetch todos os países
+ * Fetch todos os países usando fetch nativo
  */
 async function fetchAllCountries(): Promise<DerivedCountryData[]> {
   try {
-    const response = await axios.get(`${API_BASE_URL}/all`);
-    return response.data.map((country: CountryData) => enrichCountryData(country));
+    const response = await fetch(`${API_BASE_URL}/v5`, {
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const countries = result?.data?.objects || [];
+
+    return countries
+      .map((country: any) => enrichCountryData(normalizeCountryData(country)))
+      .filter((c: DerivedCountryData) => c.cca3);
   } catch (error) {
     console.warn('Erro ao buscar países da API, usando dados mock:', error);
     const { mockCountries } = await import('@/lib/mockData');
@@ -54,70 +62,87 @@ async function fetchAllCountries(): Promise<DerivedCountryData[]> {
 }
 
 /**
+ * Normaliza dados da API v5 para o formato esperado
+ */
+function normalizeCountryData(country: any): CountryData {
+  const codes = country.codes || {};
+  const names = country.names || {};
+  const commonName = names.common || 'Unknown';
+  const officialName = names.official || commonName;
+  const area = country.area?.kilometers || country.area || 0;
+
+  return {
+    name: {
+      common: commonName,
+      official: officialName,
+    },
+    cca2: codes.alpha_2 || '',
+    cca3: codes.alpha_3 || '',
+    region: country.region || 'Unknown',
+    subregion: country.subregion,
+    capital: country.capitals || [],
+    area: area,
+    population: country.population,
+    languages: country.languages || {},
+    currencies: country.currencies || {},
+    flags: { svg: country.flag || '🌍' },
+    latlng: country.coordinates,
+    timezones: country.timezones || [],
+    borders: country.borders || [],
+  };
+}
+
+/**
  * Calcula estatísticas globais a partir dos dados de países
  */
 function calculateGlobalStats(countries: DerivedCountryData[]): GlobalStats {
-  const regions = new Map<string, DerivedCountryData[]>();
-  const uniqueCurrencies = new Set<string>();
-  const uniqueLanguages = new Set<string>();
-  const languageDistribution: Record<string, number> = {};
-  const currencyDistribution: Record<string, number> = {};
+  const regionMap = new Map<string, DerivedCountryData[]>();
+  const languageCount = new Map<string, number>();
+  const currencyCount = new Map<string, number>();
 
-  // Agrupa por região e coleta moedas/idiomas
+  let totalPopulation = 0;
+  let totalArea = 0;
+
   countries.forEach((country) => {
+    totalPopulation += country.population || 0;
+    totalArea += country.area || 0;
+
+    // Regiões
     const region = country.region || 'Unknown';
-    if (!regions.has(region)) {
-      regions.set(region, []);
+    if (!regionMap.has(region)) {
+      regionMap.set(region, []);
     }
-    regions.get(region)!.push(country);
+    regionMap.get(region)!.push(country);
 
-    // Coleta moedas
-    if (country.currencies) {
-      Object.entries(country.currencies).forEach(([code, data]) => {
-        uniqueCurrencies.add(code);
-        currencyDistribution[code] = (currencyDistribution[code] || 0) + 1;
-      });
-    }
+    // Idiomas
+    Object.keys(country.languages || {}).forEach((lang) => {
+      languageCount.set(lang, (languageCount.get(lang) || 0) + 1);
+    });
 
-    // Coleta idiomas
-    if (country.languages) {
-      Object.entries(country.languages).forEach(([code, name]) => {
-        uniqueLanguages.add(name);
-        languageDistribution[name] = (languageDistribution[name] || 0) + 1;
-      });
-    }
+    // Moedas
+    Object.keys(country.currencies || {}).forEach((curr) => {
+      currencyCount.set(curr, (currencyCount.get(curr) || 0) + 1);
+    });
   });
 
-  // Calcula estatísticas por região
-  const regionStats: RegionStats[] = Array.from(regions.entries()).map(
+  // Construir RegionStats
+  const regions: RegionStats[] = Array.from(regionMap.entries()).map(
     ([region, regionCountries]) => {
-      const totalPopulation = regionCountries.reduce((sum, c) => sum + (c.population || 0), 0);
-      const totalArea = regionCountries.reduce((sum, c) => sum + (c.area || 0), 0);
-      const averagePopulation = totalPopulation / regionCountries.length;
-      const averageArea = totalArea / regionCountries.length;
-      const averageDensity = totalArea > 0 ? totalPopulation / totalArea : 0;
-
+      const regionPopulation = regionCountries.reduce((sum, c) => sum + (c.population || 0), 0);
+      const regionArea = regionCountries.reduce((sum, c) => sum + (c.area || 0), 0);
       return {
         region,
         countryCount: regionCountries.length,
-        totalPopulation,
-        totalArea,
-        averagePopulation,
-        averageArea,
-        averageDensity,
-        countries: regionCountries.sort((a, b) => (b.population || 0) - (a.population || 0)),
+        totalPopulation: regionPopulation,
+        totalArea: regionArea,
+        averagePopulation: regionCountries.length > 0 ? regionPopulation / regionCountries.length : 0,
+        averageArea: regionCountries.length > 0 ? regionArea / regionCountries.length : 0,
+        averageDensity: regionArea > 0 ? regionPopulation / regionArea : 0,
+        countries: regionCountries,
       };
     }
   );
 
-  // Calcula estatísticas globais
-  const totalPopulation = countries.reduce((sum, c) => sum + (c.population || 0), 0);
-  const totalArea = countries.reduce((sum, c) => sum + (c.area || 0), 0);
-  const averagePopulation = totalPopulation / countries.length;
-  const averageArea = totalArea / countries.length;
-  const averageDensity = totalArea > 0 ? totalPopulation / totalArea : 0;
-
-  // Top 10 por população e área
   const topCountriesByPopulation = [...countries]
     .sort((a, b) => (b.population || 0) - (a.population || 0))
     .slice(0, 10);
@@ -130,76 +155,54 @@ function calculateGlobalStats(countries: DerivedCountryData[]): GlobalStats {
     totalCountries: countries.length,
     totalPopulation,
     totalArea,
-    totalRegions: regions.size,
-    uniqueCurrencies: uniqueCurrencies.size,
-    uniqueLanguages: uniqueLanguages.size,
-    averagePopulation,
-    averageArea,
-    averageDensity,
-    regions: regionStats.sort((a, b) => b.totalPopulation - a.totalPopulation),
+    totalRegions: regionMap.size,
+    uniqueLanguages: languageCount.size,
+    uniqueCurrencies: currencyCount.size,
+    averageDensity: totalArea > 0 ? totalPopulation / totalArea : 0,
+    averagePopulation: countries.length > 0 ? totalPopulation / countries.length : 0,
+    averageArea: countries.length > 0 ? totalArea / countries.length : 0,
+    regions,
+    languageDistribution: Object.fromEntries(languageCount),
+    currencyDistribution: Object.fromEntries(currencyCount),
     topCountriesByPopulation,
     topCountriesByArea,
-    languageDistribution,
-    currencyDistribution,
   };
 }
 
 /**
- * Hook para fetch de todos os países com cache
+ * Hook principal: busca e cacheia dados de países
  */
-export function useAllCountries() {
-  return useQuery({
-    queryKey: ['countries', 'all'],
+export function useGlobalStats() {
+  const { data: countries, isLoading, error } = useQuery({
+    queryKey: ['countries'],
     queryFn: fetchAllCountries,
     staleTime: 1000 * 60 * 60, // 1 hora
     gcTime: 1000 * 60 * 60 * 24, // 24 horas
   });
-}
-
-/**
- * Hook para estatísticas globais
- */
-export function useGlobalStats() {
-  const { data: countries, isLoading, error } = useAllCountries();
 
   const stats = countries ? calculateGlobalStats(countries) : null;
 
   return {
+    countries: countries || [],
     data: stats,
     isLoading,
     error,
-    countries,
   };
 }
 
 /**
  * Hook para buscar um país específico
  */
-export function useCountryByCode(code: string) {
-  return useQuery({
-    queryKey: ['countries', 'byCode', code],
-    queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/alpha/${code}`);
-      return enrichCountryData(response.data[0]);
-    },
-    enabled: !!code,
-    staleTime: 1000 * 60 * 60,
-    gcTime: 1000 * 60 * 60 * 24,
-  });
+export function useCountry(cca3: string) {
+  const { countries } = useGlobalStats();
+  const country = countries.find((c) => c.cca3 === cca3);
+  return country;
 }
 
 /**
  * Hook para buscar países por região
  */
 export function useCountriesByRegion(region: string) {
-  return useQuery({
-    queryKey: ['countries', 'byRegion', region],
-    queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/region/${region}`);
-      return response.data.map((country: CountryData) => enrichCountryData(country));
-    },
-    enabled: !!region,
-    staleTime: 1000 * 60 * 60,
-    gcTime: 1000 * 60 * 60 * 24,
-  });
+  const { countries } = useGlobalStats();
+  return countries.filter((c) => c.region === region);
 }
