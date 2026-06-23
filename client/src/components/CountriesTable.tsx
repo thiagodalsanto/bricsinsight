@@ -180,11 +180,7 @@ export function CountriesTable({
               >
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    {typeof country.flags?.svg === 'string' && country.flags.svg.startsWith('http') ? (
-                      <img src={country.flags.svg} alt={country.name.common} className="w-6 h-4 object-cover rounded" />
-                    ) : (
-                      <span className="text-lg">{country.flags?.svg || '🌍'}</span>
-                    )}
+                    <span className="text-lg">{country.flags?.svg || '🌍'}</span>
                     {country.name.common}
                   </div>
                 </TableCell>
