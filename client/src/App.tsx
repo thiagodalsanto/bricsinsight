@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Switch>
+    <Switch base="/bricsinsight">
       <Route path={"/"} component={Home} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
