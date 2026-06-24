@@ -105,7 +105,7 @@ export function Top10CountriesChart({ stats }: ChartsProps) {
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Top Países Mais Populosos</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 150, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis type="number" stroke="#8B92B0" />
           <YAxis dataKey="name" type="category" stroke="#8B92B0" width={140} />
@@ -169,6 +169,37 @@ export function LanguageDistributionChart({ stats }: ChartsProps) {
   );
 }
 
+const CustomScatterTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const density = data.area > 0 ? (data.population / data.area).toFixed(1) : 'N/A';
+    return (
+      <div
+        style={{
+          backgroundColor: '#1A1F3A',
+          border: '2px solid #00D9FF',
+          borderRadius: '0.5rem',
+          padding: '8px',
+        }}
+      >
+        <p style={{ color: '#00D9FF', fontSize: '12px', fontWeight: 'bold', margin: '0 0 4px 0' }}>
+          {data.name}
+        </p>
+        <p style={{ color: '#0099FF', fontSize: '12px', margin: '2px 0' }}>
+          Área: {(data.area).toLocaleString()} km²
+        </p>
+        <p style={{ color: '#0099FF', fontSize: '12px', margin: '2px 0' }}>
+          População: {(data.population).toLocaleString()}
+        </p>
+        <p style={{ color: '#F0F2FF', fontSize: '12px', margin: '2px 0' }}>
+          Densidade: {density} hab/km²
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function AreaVsPopulationChart({ stats }: ChartsProps) {
   if (!stats) return null;
 
@@ -212,13 +243,8 @@ export function AreaVsPopulationChart({ stats }: ChartsProps) {
             domain={['dataMin', 'dataMax']}
           />
           <Tooltip
-            contentStyle={{
-              backgroundColor: '#1A1F3A',
-              border: '2px solid #00D9FF',
-              borderRadius: '0.5rem',
-            }}
+            content={<CustomScatterTooltip />}
             cursor={{ fill: 'rgba(0, 217, 255, 0.1)' }}
-            formatter={(value: any) => value.toLocaleString()}
           />
           <Scatter name="Países" data={data} fill="#00D9FF" />
         </ScatterChart>

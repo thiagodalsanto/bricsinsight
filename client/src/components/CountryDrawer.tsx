@@ -40,13 +40,8 @@ export function CountryDrawer({ country, isOpen, onClose }: CountryDrawerProps) 
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="max-w-2xl">
         <DrawerHeader className="space-y-4">
-          <div className="flex items-center gap-4">
-            <span className="text-6xl">{country.flags?.svg || '🌍'}</span>
-            <div>
-              <DrawerTitle className="text-3xl">{country.name.common}</DrawerTitle>
-              <DrawerDescription className="text-base">{country.name.official}</DrawerDescription>
-            </div>
-          </div>
+          <DrawerTitle className="text-3xl">{country.name.common}</DrawerTitle>
+          <DrawerDescription className="text-base">{country.name.official}</DrawerDescription>
         </DrawerHeader>
 
         <div className="px-6 pb-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
