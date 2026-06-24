@@ -105,7 +105,7 @@ export function Top10CountriesChart({ stats }: ChartsProps) {
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Top Países Mais Populosos</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis type="number" stroke="#8B92B0" />
           <YAxis dataKey="name" type="category" stroke="#8B92B0" width={140} />
@@ -224,7 +224,7 @@ export function AreaVsPopulationChart({ stats }: ChartsProps) {
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Área vs População</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis
             dataKey="area"
