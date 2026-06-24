@@ -1,12 +1,12 @@
 /**
- * GeoInsight — Global Data Dashboard
+ * BRICSInsights — Global Economic Bloc Dashboard
  * Dark Tech Sophisticated — Cyberpunk Minimalism
  * 
  * Dashboard interativo com:
- * - KPIs globais
- * - Filtros dinâmicos sincronizados com URL
- * - Gráficos analíticos
- * - Tabela de países
+ * - KPIs do BRICS
+ * - Análises econômicas
+ * - Gráficos comparativos
+ * - Dados dos 5 membros
  * - Drawer de detalhes
  */
 
@@ -60,8 +60,8 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <Globe className="w-8 h-8 text-accent" />
               <div>
-                <h1 className="text-2xl font-bold">GeoInsight</h1>
-                <p className="text-xs text-muted-foreground">Global Data Dashboard</p>
+                <h1 className="text-2xl font-bold">BRICSInsights</h1>
+                <p className="text-xs text-muted-foreground">Global Economic Bloc Dashboard</p>
               </div>
             </div>
             <Button

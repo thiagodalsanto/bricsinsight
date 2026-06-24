@@ -1,31 +1,27 @@
 /**
- * GeoInsight — Componentes de Gráficos
+ * BRICSInsights — Componentes de Gráficos
  * Dark Tech Sophisticated — Cyberpunk Minimalism
  * 
  * Gráficos com Recharts:
  * - População por região (BarChart)
- * - Top 10 países (BarChart)
- * - Distribuição de idiomas (PieChart)
+ * - Top 5 países (BarChart)
+ * - Distribuição de idiomas (BarChart)
  * - Área vs População (ScatterChart)
  */
 
 import {
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   ScatterChart,
   Scatter,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
-import { GlobalStats, DerivedCountryData } from '@/types/countries';
+import { GlobalStats } from '@/types/countries';
 
 interface ChartsProps {
   stats: GlobalStats | null;
@@ -42,32 +38,45 @@ const COLORS = [
   '#006699',
 ];
 
-const tooltipStyle = {
-  backgroundColor: '#1A1F3A',
-  border: '1px solid #2A3050',
-  borderRadius: '0.65rem',
-};
-
-const labelStyle = { color: '#F0F2FF' };
-
 export function PopulationByRegionChart({ stats }: ChartsProps) {
-  if (!stats) return null;
+  if (!stats || stats.regions.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">População por Região</h3>
+        <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+          Sem dados disponíveis
+        </div>
+      </Card>
+    );
+  }
 
   const data = stats.regions.map((region) => ({
     name: region.region,
     population: region.totalPopulation,
-    countries: region.countryCount,
   }));
 
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">População por Região</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
+        <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
-          <XAxis dataKey="name" stroke="#8B92B0" angle={-45} textAnchor="end" height={80} />
+          <XAxis 
+            dataKey="name" 
+            stroke="#8B92B0" 
+            angle={-45} 
+            textAnchor="end" 
+            height={80}
+          />
           <YAxis stroke="#8B92B0" />
-          <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: '#1A1F3A',
+              border: '2px solid #00D9FF',
+              borderRadius: '0.5rem',
+            }}
+            formatter={(value: any) => value.toLocaleString()}
+          />
           <Bar dataKey="population" fill="#00D9FF" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
@@ -76,7 +85,16 @@ export function PopulationByRegionChart({ stats }: ChartsProps) {
 }
 
 export function Top10CountriesChart({ stats }: ChartsProps) {
-  if (!stats) return null;
+  if (!stats || stats.topCountriesByPopulation.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Top Países Mais Populosos</h3>
+        <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+          Sem dados disponíveis
+        </div>
+      </Card>
+    );
+  }
 
   const data = stats.topCountriesByPopulation.map((country) => ({
     name: country.name.common,
@@ -85,13 +103,20 @@ export function Top10CountriesChart({ stats }: ChartsProps) {
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Top 10 Países Mais Populosos</h3>
+      <h3 className="text-lg font-semibold mb-4">Top Países Mais Populosos</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical">
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 150, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis type="number" stroke="#8B92B0" />
-          <YAxis dataKey="name" type="category" stroke="#8B92B0" width={120} />
-          <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
+          <YAxis dataKey="name" type="category" stroke="#8B92B0" width={140} />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: '#1A1F3A',
+              border: '2px solid #00D9FF',
+              borderRadius: '0.5rem',
+            }}
+            formatter={(value: any) => value.toLocaleString()}
+          />
           <Bar dataKey="population" fill="#0099FF" radius={[0, 8, 8, 0]} />
         </BarChart>
       </ResponsiveContainer>
@@ -106,31 +131,39 @@ export function LanguageDistributionChart({ stats }: ChartsProps) {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 8)
     .map(([name, value]) => ({
-      name,
+      name: name.toUpperCase(),
       value,
     }));
+
+  if (data.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Top Idiomas (Países)</h3>
+        <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+          Sem dados disponíveis
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Top Idiomas (Países)</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ name, value }) => `${name} (${value})`}
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-        </PieChart>
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
+          <XAxis type="number" stroke="#8B92B0" />
+          <YAxis dataKey="name" type="category" stroke="#8B92B0" width={40} />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: '#1A1F3A',
+              border: '2px solid #00D9FF',
+              borderRadius: '0.5rem',
+            }}
+            formatter={(value: any) => `${value} país(es)`}
+          />
+          <Bar dataKey="value" fill="#0066FF" radius={[0, 8, 8, 0]} />
+        </BarChart>
       </ResponsiveContainer>
     </Card>
   );
@@ -139,15 +172,26 @@ export function LanguageDistributionChart({ stats }: ChartsProps) {
 export function AreaVsPopulationChart({ stats }: ChartsProps) {
   if (!stats) return null;
 
-  const data = stats.topCountriesByPopulation.slice(0, 20).map((country) => ({
+  const data = stats.topCountriesByPopulation.map((country) => ({
     name: country.name.common,
     area: country.area || 0,
     population: country.population || 0,
   }));
 
+  if (data.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Área vs População</h3>
+        <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+          Sem dados disponíveis
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Área vs População (Top 20)</h3>
+      <h3 className="text-lg font-semibold mb-4">Área vs População</h3>
       <ResponsiveContainer width="100%" height={300}>
         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
@@ -155,20 +199,26 @@ export function AreaVsPopulationChart({ stats }: ChartsProps) {
             dataKey="area"
             name="Área (km²)"
             stroke="#8B92B0"
-            scale="log"
             type="number"
+            scale="log"
+            domain={['dataMin', 'dataMax']}
           />
           <YAxis
             dataKey="population"
             name="População"
             stroke="#8B92B0"
-            scale="log"
             type="number"
+            scale="log"
+            domain={['dataMin', 'dataMax']}
           />
           <Tooltip
-            contentStyle={tooltipStyle}
-            labelStyle={labelStyle}
+            contentStyle={{
+              backgroundColor: '#1A1F3A',
+              border: '2px solid #00D9FF',
+              borderRadius: '0.5rem',
+            }}
             cursor={{ fill: 'rgba(0, 217, 255, 0.1)' }}
+            formatter={(value: any) => value.toLocaleString()}
           />
           <Scatter name="Países" data={data} fill="#00D9FF" />
         </ScatterChart>
