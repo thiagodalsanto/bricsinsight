@@ -59,7 +59,7 @@ export function PopulationByRegionChart({ stats }: ChartsProps) {
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">População por Região</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+        <BarChart data={data} margin={{ top: 10, right: 30, left: 40, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis 
             dataKey="name" 
@@ -103,9 +103,9 @@ export function Top10CountriesChart({ stats }: ChartsProps) {
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Top Países Mais Populosos</h3>
+      <h3 className="text-lg font-semibold mb-4">Países Mais Populosos</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 10, right: 0, left: -40, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis type="number" stroke="#8B92B0" />
           <YAxis dataKey="name" type="category" stroke="#8B92B0" width={140} />
@@ -138,7 +138,7 @@ export function LanguageDistributionChart({ stats }: ChartsProps) {
   if (data.length === 0) {
     return (
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Top Idiomas (Países)</h3>
+        <h3 className="text-lg font-semibold mb-4">Idiomas por Países</h3>
         <div className="h-[300px] flex items-center justify-center text-muted-foreground">
           Sem dados disponíveis
         </div>
@@ -148,9 +148,9 @@ export function LanguageDistributionChart({ stats }: ChartsProps) {
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Top Idiomas (Países)</h3>
+      <h3 className="text-lg font-semibold mb-4">Idiomas por Países</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis type="number" stroke="#8B92B0" />
           <YAxis dataKey="name" type="category" stroke="#8B92B0" width={40} />
@@ -224,7 +224,7 @@ export function AreaVsPopulationChart({ stats }: ChartsProps) {
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Área vs População</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 60 }}>
+        <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 40 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2A3050" />
           <XAxis
             dataKey="area"

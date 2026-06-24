@@ -171,25 +171,6 @@ export function FilterPanel({
             />
           </div>
 
-          {/* Languages */}
-          <div className="space-y-3">
-            <Label className="text-xs font-semibold uppercase tracking-wider">Idiomas</Label>
-            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-              {topLanguages.map((lang) => (
-                <label
-                  key={lang}
-                  className="flex items-center gap-2 cursor-pointer hover:text-accent transition-colors"
-                >
-                  <Checkbox
-                    checked={filters.languages.includes(lang)}
-                    onCheckedChange={() => handleLanguageToggle(lang)}
-                  />
-                  <span className="text-sm truncate">{lang}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
           {/* Currencies */}
           <div className="space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-wider">Moedas</Label>
