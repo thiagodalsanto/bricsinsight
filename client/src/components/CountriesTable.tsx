@@ -134,7 +134,7 @@ export function CountriesTable({
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
               <TableHead
-                className="cursor-pointer hover:text-accent transition-colors"
+                className="pl-6 cursor-pointer hover:text-accent transition-colors"
                 onClick={() => handleSort('name')}
               >
                 <div className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export function CountriesTable({
                   <SortIcon column="density" />
                 </div>
               </TableHead>
-              <TableHead className="text-right">Ação</TableHead>
+              <TableHead className="pr-6 text-right">Ação</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -178,7 +178,7 @@ export function CountriesTable({
                 key={country.cca3}
                 className="border-border hover:bg-card/50 transition-colors"
               >
-                <TableCell className="font-medium">
+                <TableCell className="pl-6 font-medium">
                   <div className="flex items-center gap-2">
                     {country.flags?.svg ? (
                       <img src={country.flags.svg} alt={country.name.common} className="w-6 h-4 object-cover rounded" />
@@ -197,7 +197,7 @@ export function CountriesTable({
                 <TableCell className="text-right font-mono text-sm">
                   {country.populationDensity?.toFixed(1) || 'N/A'}/km²
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="pr-4 text-right">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -214,33 +214,6 @@ export function CountriesTable({
           </TableBody>
         </Table>
       </Card>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Página {currentPage} de {totalPages} ({sortedCountries.length} países)
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Próxima
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -141,32 +141,29 @@ export default function Home() {
         <Separator className="bg-border" />
 
         {/* Filters and Table */}
-        <section className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Filters */}
-          <div className="lg:col-span-1">
-            <FilterPanel
-              stats={stats}
-              filters={filters}
-              onFiltersChange={updateFilters}
-              onReset={resetFilters}
-            />
-          </div>
+        <section className="space-y-6">
+          {/* Filtros */}
+          <FilterPanel
+            stats={stats}
+            filters={filters}
+            onFiltersChange={updateFilters}
+            onReset={resetFilters}
+          />
 
-          {/* Table */}
-          <div className="lg:col-span-3">
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold">Países</h2>
-                <p className="text-sm text-muted-foreground">
-                  {filteredCountries.length} de {countries?.length || 0} países
-                </p>
-              </div>
-              <CountriesTable
-                countries={filteredCountries}
-                onCountrySelect={handleCountrySelect}
-                isLoading={isLoading}
-              />
+          {/* Tabela */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Países</h2>
+              <p className="text-sm text-muted-foreground">
+                {filteredCountries.length} de {countries?.length || 0} países
+              </p>
             </div>
+
+            <CountriesTable
+              countries={filteredCountries}
+              onCountrySelect={handleCountrySelect}
+              isLoading={isLoading}
+            />
           </div>
         </section>
 
